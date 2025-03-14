@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Minha Primeira Página</title>
+    <title>Página Musical - Nota Dó</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f0f0f0;
+            background-color: #f0f8ff;
+            text-align: center;
         }
         .container {
-            max-width: 800px;
+            max-width: 600px;
             margin: 0 auto;
             background-color: white;
             padding: 20px;
@@ -18,25 +19,130 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         h1 {
-            color: #2c3e50;
+            color: #1e90ff;
         }
-        .cor-destaque {
-            color: #e74c3c;
+        .nota {
+            font-size: 72px;
+            color: #ff6347;
+            margin: 20px 0;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .piano-key {
+            width: 60px;
+            height: 200px;
+            background-color: white;
+            border: 1px solid black;
+            border-radius: 0 0 5px 5px;
+            display: inline-block;
+            margin: 0 2px;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+        .piano-key.active {
+            background-color: #e0e0e0;
+        }
+        .music-note {
+            font-size: 24px;
+            margin-top: 150px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Olá! Bem-vindo à minha página!</h1>
-        <p>Esta é minha primeira página web criada com <span class="cor-destaque">HTML e CSS</span>.</p>
-        <h2>Sobre mim</h2>
-        <p>Meu nome é [Rui]. Tenho 12 anos e estou aprendendo a criar sites!</p>
-        <h2>Minhas coisas favoritas</h2>
-        <ul>
-            <li>Jogos: [Seu jogo favorito]</li>
-            <li>Comidas: [Sua comida favorita]</li>
-            <li>Hobbies: [Seu hobby]</li>
-        </ul>
+        <h1>Página Musical</h1>
+        <p>Clique no botão abaixo ou na tecla do piano para ouvir a nota Dó (C):</p>
+        
+        <div class="nota">Dó</div>
+        
+        <div>
+            <div class="piano-key" id="doKey">
+                <div class="music-note">C</div>
+            </div>
+        </div>
+        
+        <button id="playButton">Tocar Dó</button>
+        
+        <p>Nota: Esta é a nota Dó central (C4), com frequência de 261.63 Hz.</p>
     </div>
+
+    <script>
+        // Criar um contexto de áudio
+        let audioContext;
+        let oscillator;
+        
+        function inicializarAudio() {
+            // Criar contexto de áudio apenas quando o usuário interagir
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+        
+        function tocarDo() {
+            inicializarAudio();
+            
+            // Parar o oscilador anterior se existir
+            if (oscillator) {
+                oscillator.stop();
+            }
+            
+            // Criar um oscilador para a nota Dó (C4 = 261.63 Hz)
+            oscillator = audioContext.createOscillator();
+            oscillator.type = 'sine'; // Onda senoidal para um som mais suave
+            oscillator.frequency.setValueAtTime(261.63, audioContext.currentTime); // Frequência da nota Dó
+            
+            // Criar um nó de ganho para controlar o volume
+            const gainNode = audioContext.createGain();
+            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime); // Volume a 50%
+            
+            // Aplicar uma curva de fade-out suave
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1.5);
+            
+            // Conectar oscilador -> ganho -> saída
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Iniciar o oscilador
+            oscillator.start();
+            
+            // Parar o oscilador após 1.5 segundos
+            setTimeout(() => {
+                oscillator.stop();
+            }, 1500);
+            
+            // Efeito visual na tecla do piano
+            const pianoKey = document.getElementById('doKey');
+            pianoKey.classList.add('active');
+            setTimeout(() => {
+                pianoKey.classList.remove('active');
+            }, 300);
+        }
+        
+        // Adicionar event listeners
+        document.getElementById('playButton').addEventListener('click', tocarDo);
+        document.getElementById('doKey').addEventListener('click', tocarDo);
+        
+        // Também podemos tocar a nota ao pressionar a tecla 'c'
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'c' || event.key === 'C') {
+                tocarDo();
+            }
+        });
+    </script>
 </body>
 </html>
